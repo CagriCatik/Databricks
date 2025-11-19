@@ -1,0 +1,8 @@
+{
+  "landed_at": "2025-10-05T11:06:34Z",
+  "source_systems": [
+    "ecommerce-db",
+    "catalog-service"
+  ],
+  "note": "Demo bronze landing for ELT walkthrough."
+}

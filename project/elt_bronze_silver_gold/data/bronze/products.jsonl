@@ -1,0 +1,5 @@
+{"product_id": 1001, "sku": "SKU-1001", "name": "Widget 1001", "category": "B", "unit_price": 14.5, "active": true}
+{"product_id": 1002, "sku": "SKU-1002", "name": "Widget 1002", "category": "A", "unit_price": 9.99, "active": false}
+{"product_id": 1003, "sku": "SKU-1003", "name": "Widget 1003", "category": "C", "unit_price": 50.0, "active": true}
+{"product_id": 1004, "sku": "SKU-1004", "name": "Widget 1004", "category": "B", "unit_price": 9.99, "active": true}
+{"product_id": 1005, "sku": "SKU-1005", "name": "Widget 1005", "category": "B", "unit_price": 9.99, "active": true}

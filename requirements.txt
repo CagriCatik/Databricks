@@ -1,0 +1,11 @@
+pandas
+pyarrow
+fastparquet
+pandas
+geopandas
+shapely
+matplotlib
+tqdm
+geopy
+numpy
+scikit-learn

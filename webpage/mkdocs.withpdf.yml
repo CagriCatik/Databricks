@@ -1,0 +1,82 @@
+site_name: Databricks
+nav:
+  - Home: index.md
+  - Introduction:
+      - Overview: 01_introduction/01_overview.md
+      - Free-Trial: 01_introduction/03_free-trial.md
+      - Workspace: 01_introduction/04_workspace.md
+      - Materials: 01_introduction/05_materials.md
+      - Creating-Cluster: 01_introduction/06_creating-cluster.md
+      - Notebooks: 01_introduction/07_notebooks.md
+      - Git-folders: 01_introduction/08_git-folders.md
+  - Databricks Platform:
+      - Delta Lake: 02_databricks-platform/01_delta-lake.md
+      - Understanding Delta Tables: 02_databricks-platform/02_understanding-delta-tables.md
+      - Advanced Delta Features: 02_databricks-platform/03_advanced-delta-features.md
+      - Relational Entities: 02_databricks-platform/04_relational-entities.md
+      - Databases and Tables on Databricks: 02_databricks-platform/05_databases-and-tables-on-databricks.md
+      - Set Up Delta Tables: 02_databricks-platform/06_set-up-delta-tables.md
+      - Views: 02_databricks-platform/07_views.md
+      - Working with Views: 02_databricks-platform/08_working-with-views.md
+  - ELT with Spark SQL + Python:
+      - Querying Files: 03_elt-with-spark-sql-python/01_querying-files.md
+      - Hands-on Querying: 03_elt-with-spark-sql-python/02_querying-files-hands-on.md
+      - Simplified File Querying: 03_elt-with-spark-sql-python/03_simplified-file-querying.md
+      - Writing to Tables: 03_elt-with-spark-sql-python/04_writing-to-tables.md
+      - Advanced Transformations: 03_elt-with-spark-sql-python/05_advanced-transformations.md
+      - Higher-order Functions & SQL UDFs: 03_elt-with-spark-sql-python/06_higher-order-functions-sql-udfs.md
+  - Incremental Data Processing:
+      - Overview: 04_incremental-data-processing/
+  - Productionizing Data Pipelines:
+      - Overview: 05_productionizing-data-pipelines/
+  - Data Governance:
+      - Overview: 06_data-governance/
+  - Certification:
+      - Overview: 07_certification/
+
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.top
+    - navigation.sections       # enables grouped, collapsible sections
+    - navigation.indexes        # treats index.md inside a section as its landing page
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - header.autohide
+    - header.autohide
+    - toc.follow
+    - palette.toggle
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: amber
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: amber
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+extra:
+  copyright: false
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/CagriCatik/Power-BI
+
+extra_css:
+  - styles/extra.css
+
+plugins:
+  - search
+  - with-pdf
