@@ -187,5 +187,3 @@ Benefits:
 | Temp View + CTAS             | Yes           | Yes           | Yes (via view) | Load external unstructured data |
 
 **Warning:** External tables (`USING`) do not support Delta Lake features and may incur performance issues when referring to large datasets.
-
-```

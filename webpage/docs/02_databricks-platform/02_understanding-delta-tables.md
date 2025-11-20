@@ -1,29 +1,76 @@
-# Understanding Delta Tables
+# Understanding Delta Tables in Databricks
 
-- This notebook introduces the fundamentals of working with Delta Lake tables in Databricks, including creation, data insertion, updates, file structure, and transaction logging using the Hive Metastore.
+This notebook introduces the fundamentals of working with **Delta Lake tables** in Databricks using the **Hive Metastore** as catalog. It covers:
+
+- Catalog and metadata resolution
+- Delta table creation
+- Inserts and updates and how they translate into files
+- Physical file structure in DBFS
+- Transaction logging in `_delta_log`
+- ACID transactions and how Delta implements them
 
 ---
 
-## Catalog and Metadata Configuration
+## 1. Catalog And Metadata Configuration
 
-Delta tables in Databricks reside within a **catalog structure**. Databricks supports:
+Delta tables in Databricks are organized in a **three level namespace**:
 
-- **Unity Catalog** (recommended, full governance features)
-- **Hive Metastore** (used here for simplicity)
+- `catalog.schema.table`
 
-Configure the current notebook to use the Hive Metastore:
+In this notebook you explicitly use the **Hive Metastore** instead of Unity Catalog:
 
 ```sql
 USE CATALOG hive_metastore;
+USE SCHEMA default;
+````
+
+From now on:
+
+* Fully qualified name is: `hive_metastore.default.employees`
+* Unqualified name `employees` resolves to that table in the active catalog and schema.
+
+### Hive Metastore vs Unity Catalog (short comparison)
+
+* **Hive Metastore**
+
+  * Legacy metadata store
+  * Permissions often managed at cluster or workspace level
+  * Paths typically under `dbfs:/user/hive/warehouse/...`
+
+* **Unity Catalog**
+
+  * Central governance, fine grained permissions, lineage
+  * Strong isolation between catalogs and schemas
+  * Recommended for production
+
+In this notebook, Hive Metastore keeps the examples simple and transparent, especially when inspecting storage paths.
+
+### Logical vs Physical View
+
+```mermaid
+flowchart LR
+    subgraph Metadata
+        C[hive_metastore catalog]
+        S[default schema]
+        T[employees table - logical object]
+    end
+
+    subgraph Storage
+        P[dbfs:/user/hive/warehouse/default.db/employees]
+    end
+
+    C --> S --> T
+    T -->|location| P
 ```
 
-All subsequent table operations will use this catalog.
+* **Logical object:** The table entry in the metastore.
+* **Physical location:** The folder in DBFS containing Parquet data files and `_delta_log`.
 
 ---
 
-## Creating Delta Tables
+## 2. Creating Delta Tables
 
-Delta is the default format on Databricks. The following command creates a Delta table:
+On Databricks, **Delta is the default table format** for managed tables (unless overridden).
 
 ```sql
 CREATE TABLE employees (
@@ -33,18 +80,48 @@ CREATE TABLE employees (
 );
 ```
 
-The table is visible under `hive_metastore.default.employees`.
+Key points:
 
-You can inspect it via the Catalog Explorer to confirm:
+* This creates a **managed Delta table** in `hive_metastore.default`.
 
-* Table format: Delta
-* Columns: `id`, `name`, `salary`
+* Storage location is automatically assigned, for example:
+
+  * `dbfs:/user/hive/warehouse/default.db/employees`
+
+* Table format is **Delta** (transactional Parquet).
+
+You can verify the table via Catalog Explorer or with:
+
+```sql
+DESCRIBE EXTENDED employees;
+```
+
+Typical fields you will see:
+
+* `Provider: delta`
+* `Location: dbfs:/user/hive/warehouse/default.db/employees`
+* `Type: MANAGED`
+
+### Creating External Delta Tables
+
+You can also create an external table pointing to an existing path:
+
+```sql
+CREATE TABLE employees_external
+USING DELTA
+LOCATION 'dbfs:/mnt/data/employees';
+```
+
+Managed vs external is important for lifecycle:
+
+* Managed tables: Databricks manages the storage location and may drop data upon `DROP TABLE`.
+* External tables: The table metadata can be dropped independently of the underlying files.
 
 ---
 
-## Inserting Data
+## 3. Inserting Data
 
-Insert multiple records using standard SQL syntax:
+You insert records with standard SQL:
 
 ```sql
 INSERT INTO employees VALUES (1, 'Adam', 1000);
@@ -53,53 +130,113 @@ INSERT INTO employees VALUES (3, 'Bob', 1100);
 INSERT INTO employees VALUES (4, 'Bella', 1150);
 ```
 
-Each `INSERT` triggers a separate **transaction**, resulting in one Parquet data file per statement.
+Each `INSERT`:
+
+* Is its own **Delta transaction**
+* Writes one or more Parquet files
+* Appends a new JSON entry to the `_delta_log` directory
+
+On small examples, this often results in roughly one data file per statement, but the actual file layout is an implementation detail and may vary based on optimization and clustering settings.
+
+### Logical Insert Flow
+
+```mermaid
+sequenceDiagram
+    participant SQL as SQL Client
+    participant DR as Databricks Runtime
+    participant DT as Delta Table
+    participant ST as Storage (DBFS)
+
+    SQL->>DR: INSERT INTO employees VALUES (...)
+    DR->>ST: Write new Parquet file(s)
+    DR->>DT: Append new JSON commit to _delta_log
+    DT->>DR: Confirm commit (new table version)
+    DR->>SQL: Statement successful
+```
+
+The important concept: a successful `INSERT` means:
+
+* A new **Delta version** is created.
+* Readers see a consistent snapshot including the new rows.
 
 ---
 
-## Querying Data
+## 4. Querying Data
 
-Query the table using:
+Simple query:
 
 ```sql
 SELECT * FROM employees;
 ```
 
-Only the result of the **last SQL statement** in a cell will be displayed unless explicitly separated.
+Notes:
+
+* In notebooks, only the **last SQL statement** in a cell renders a result grid.
+* Use multiple cells or temporary views if you want to inspect intermediate results.
+
+Typical exercises at this stage:
+
+* Verify that all 4 rows were inserted.
+* Try filters and projections:
+
+  ```sql
+  SELECT name, salary FROM employees WHERE salary > 1100;
+  ```
 
 ---
 
-## Inspecting Table Metadata
+## 5. Inspecting Table Metadata
 
-Use the following command to retrieve table-level metadata:
+Use `DESCRIBE DETAIL` for a compact metadata summary:
 
 ```sql
 DESCRIBE DETAIL employees;
 ```
 
-Important fields include:
+Important fields:
 
-* `location`: path to the table storage
-* `numFiles`: number of current data files
-* `format`: Delta
-* `tableType`: managed
+* `location`
+  Physical path of the table, for example
+  `dbfs:/user/hive/warehouse/default.db/employees`
+* `numFiles`
+  Count of **active** data files that current version uses.
+* `format`
+  Should be `delta`.
+* `tableType`
+  `MANAGED` or `EXTERNAL`.
+* `lastModified`
+  Last modification timestamp.
 
-List files in the location using Databricks File System magic:
+You can inspect the physical files using the Databricks File System magic:
 
 ```python
-%fs ls dbfs:/path/to/employees/
+%fs ls dbfs:/user/hive/warehouse/default.db/employees
 ```
 
-Expected contents:
+Typical layout:
 
-* Four `.parquet` files
-* `_delta_log/` directory
+* One `_delta_log/` directory
+* Multiple `.parquet` data files
+
+### Logical vs Physical Structure
+
+```mermaid
+flowchart TB
+    subgraph employees table
+        L1[_delta_log/]
+        L2[Parquet data files]
+    end
+
+    L1 -->|defines state of| L2
+```
+
+* `_delta_log` drives which Parquet files are currently valid for a given table version.
 
 ---
 
-## Update Operations and File Behavior
+## 6. Update Operations And File Behavior
 
-Update records using standard SQL:
+Consider an update:
 
 ```sql
 UPDATE employees
@@ -107,124 +244,300 @@ SET salary = salary + 100
 WHERE name LIKE 'A%';
 ```
 
-This affects rows with names starting with 'A' (Adam, Anna).
+This will logically affect:
 
-**Important Notes:**
+* `Adam` and `Anna`.
 
-* Delta **does not modify** existing files
-* **New files** are written with updated data
-* **Old files** are logically removed (soft delete)
+**Delta semantics:**
 
-Re-inspect metadata:
+* Existing Parquet files are **not updated in place**.
+* Delta performs a **copy on write**:
+
+  * Reads affected data.
+  * Writes **new** Parquet files with the updated rows.
+  * Marks old Parquet files as removed in `_delta_log`.
+
+### Update Flow
+
+```mermaid
+flowchart LR
+
+    subgraph Before_Update_Version_N
+        F1["file_1.parquet - rows: Adam, Anna"]
+        F2["file_2.parquet - rows: Bob, Bella"]
+    end
+
+    subgraph After_Update_Version_N_plus_1
+        F3["file_3.parquet - rows: Adam+, Anna+"]
+        F2b["file_2.parquet - rows: Bob, Bella"]
+    end
+
+    F1 -. removed .-> X["inactive (in _delta_log)"]
+    F3 -->|added| A["active set"]
+    F2b -->|still active| A
+
+```
+
+* At version `N`:
+
+  * `F1` and `F2` are active.
+* At version `N+1`:
+
+  * `F1` is marked as removed.
+  * `F3` is added with updated salaries.
+  * `F2` remains active.
+
+### Re inspecting Metadata
 
 ```sql
 DESCRIBE DETAIL employees;
 ```
 
-Although six files exist (original + updated), only **four** are considered active.
+You may observe:
+
+* `numFiles` reflects the number of **active** data files, not the total physical files ever written.
+* The physical directory may contain more files than `numFiles` because of logically removed files.
 
 ---
 
-## Transaction Log and Table History
+## 7. Transaction Log And Table History
 
-Delta Lake maintains a full **audit trail** using a transaction log stored in `_delta_log`.
+The Delta transaction log lives in the `_delta_log` directory under the table location:
 
-Inspect the table history:
+```python
+%fs ls dbfs:/user/hive/warehouse/default.db/employees/_delta_log
+```
+
+You will see:
+
+* JSON commit files:
+  `000000.json`, `000001.json`, ..., `000005.json`, ...
+* Possibly Parquet checkpoints for larger tables:
+  `000010.checkpoint.parquet`, etc.
+
+Each JSON file corresponds to a **table version** and includes actions such as:
+
+* `metaData` (table definition)
+* `protocol` (reader and writer versions)
+* `add` (new files)
+* `remove` (files removed from the active set)
+
+### Example History
 
 ```sql
 DESCRIBE HISTORY employees;
 ```
 
-Example history breakdown:
+Typical history:
 
-| Version | Operation | Description          |
-| ------- | --------- | -------------------- |
-| 0       | CREATE    | Table creation       |
-| 1–4     | INSERT    | Four data insertions |
-| 5       | UPDATE    | Salary update        |
+| Version | Operation | Description    |
+| ------- | --------- | -------------- |
+| 0       | CREATE    | Table creation |
+| 1       | WRITE     | First insert   |
+| 2       | WRITE     | Second insert  |
+| 3       | WRITE     | Third insert   |
+| 4       | WRITE     | Fourth insert  |
+| 5       | UPDATE    | Salary update  |
 
-Inspect log directory:
+### Versioned Timeline Diagram
 
-```python
-%fs ls dbfs:/path/to/employees/_delta_log/
+```mermaid
+flowchart LR
+    V0[(v0 - CREATE)]
+    V1[(v1 - INSERT)]
+    V2[(v2 - INSERT)]
+    V3[(v3 - INSERT)]
+    V4[(v4 - INSERT)]
+    V5[(v5 - UPDATE)]
+
+    V0 --> V1 --> V2 --> V3 --> V4 --> V5
 ```
 
-Each transaction corresponds to a JSON file: `000000.json`, `000001.json`, ..., `000005.json`
+Each version:
 
-Inspect the latest JSON log:
+* Represents a consistent snapshot of the `employees` table.
+* Is reconstructible from the transaction log (checkpoint + JSON).
 
-* `"add"`: new files created in update
-* `"remove"`: old files marked obsolete
+### Viewing Specific Versions (Time Travel)
 
-These files are **immutable**; Delta ensures atomicity by versioning changes.
+You can query historical versions:
+
+```sql
+SELECT * FROM employees VERSION AS OF 3;
+
+SELECT * FROM employees TIMESTAMP AS OF '2025-11-20T10:00:00Z';
+```
+
+Time travel is directly powered by the `_delta_log` history.
 
 ---
 
-## Summary
+## 8. ACID Transactions In Delta Tables
 
-| Action          | Behavior in Delta Table                           |
-| --------------- | ------------------------------------------------- |
-| Table Creation  | Parquet format + initialized `_delta_log`         |
-| Data Insertion  | New file + transaction log entry per insert       |
-| Data Update     | New file(s) added, old file(s) marked as removed  |
-| Query Execution | Uses transaction log to find active (valid) files |
-| Metadata Access | Via `DESCRIBE DETAIL` and `DESCRIBE HISTORY`      |
-| Audit Trail     | Maintained in `_delta_log` as JSON-formatted logs |
+ACID stands for **Atomicity**, **Consistency**, **Isolation**, and **Durability**. Delta Lake implements these properties on top of object storage using the transaction log and a commit protocol.
 
-Delta Lake’s transaction log is the backbone enabling ACID compliance, time travel, and safe concurrent operations.
+### 8.1 Atomicity
 
+Definition:
 
-## ACID Transactions
+* A transaction is all or nothing.
+* Either every change in a commit becomes visible, or none does.
 
-ACID is an acronym representing four key properties—**Atomicity**, **Consistency**, **Isolation**, and **Durability**—that guarantee reliable processing of database transactions. These properties are critical for ensuring data integrity, especially in systems where reliability and correctness are paramount.
+In Delta tables, atomicity is implemented via:
 
-### Atomicity
+* A new log file (for example `000005.json`) is written and then atomically committed as the latest version.
+* Readers either see version `4` or version `5`, but never a mix.
 
-Atomicity ensures that each transaction is treated as a single, indivisible unit of work. This means:
+```mermaid
+sequenceDiagram
+    participant W as Writer
+    participant L as _delta_log
+    participant R as Reader
 
-- Either all operations within the transaction are executed successfully, or none are.
-- If any operation fails, the entire transaction is rolled back.
-- The database remains unchanged if the transaction does not complete fully.
+    W->>L: Propose commit (v5)
+    alt commit succeeds
+        L->>R: Latest version = 5
+        R->>L: Read v5 metadata
+    else commit fails
+        L->>R: Latest version = 4
+        R->>L: Read v4 metadata
+    end
+```
 
-> Example: In a banking system, transferring money involves debiting one account and crediting another. If either operation fails, the transaction is aborted and the database is restored to its previous state.
+If something fails before the log file is fully committed, readers continue to see the previous version.
 
-### Consistency
+### 8.2 Consistency
 
-Consistency guarantees that a transaction takes the database from one valid state to another. It enforces database constraints, rules, and triggers, ensuring:
+Definition:
 
-- No violation of data integrity or business rules.
-- Data remains valid before and after a transaction.
+* A transaction transforms the table from one valid state to another.
+* Constraints, schema, and rules must not be violated.
 
-> Example: If a table requires that account balances be non-negative, a transaction that would result in a negative balance will be rejected to maintain consistency.
+In Delta:
 
-### Isolation
+* **Schema enforcement** ensures that inserts and updates follow the declared schema.
+* Constraints such as `NOT NULL` and `CHECK` definitions are validated at write time.
 
-Isolation ensures that concurrent transactions do not interfere with one another. Each transaction operates as if it is the only one executing, even when many are processed simultaneously. This prevents:
+Example:
 
-- Dirty reads
-- Lost updates
-- Non-repeatable reads
+```sql
+ALTER TABLE employees
+ALTER COLUMN id SET NOT NULL;
 
-Most database systems offer isolation levels (e.g., Read Committed, Repeatable Read, Serializable) to balance consistency and performance.
+ALTER TABLE employees
+ADD CONSTRAINT positive_salary CHECK (salary >= 0);
+```
 
-> Example: If two users attempt to update the same account balance at the same time, isolation ensures their transactions do not conflict or produce incorrect results.
+Any transaction violating these is rejected; the table remains in a consistent state.
 
-### Durability
+### 8.3 Isolation
 
-Durability guarantees that once a transaction is committed:
+Definition:
 
-- Its changes are permanently recorded in the database.
-- The results are preserved even in the event of a system crash, power failure, or hardware issue.
+* Concurrent transactions appear as if they were executed serially.
+* One transaction does not see partial results of another.
 
-> Example: After confirming a successful funds transfer, the updated balances remain stored even if the server goes offline immediately afterward.
+Delta uses **snapshot isolation** and **optimistic concurrency control**:
 
-### Importance
+* Readers work against a fixed version (for example `v4`).
+* Writers attempt to create a new version (for example `v5`).
+* If two writers conflict (modify the same data range), the second commit may fail and must be retried.
 
-ACID properties are foundational to transactional systems such as:
+From a reader perspective:
 
-- Banking and financial services
-- E-commerce platforms
-- Inventory and order management systems
-- Software-as-a-Service (SaaS) backends
+* They never see half applied updates.
+* They always see a stable snapshot.
 
-By ensuring correctness, reliability, and recoverability, ACID transactions provide the consistency required to build dependable and trustworthy data systems.
+### 8.4 Durability
+
+Definition:
+
+* Once a transaction is committed, its effects are permanent.
+* Survive cluster restarts or failures.
+
+In Delta:
+
+* Data files and log files are persisted to **cloud object storage** or DBFS, which is itself backed by resilient storage.
+* After a commit, the new version is durable and can be reconstructed from `_delta_log` even if the cluster is restarted.
+
+---
+
+## 9. ACID Summary Table For Delta Tables
+
+| Property    | Delta Implementation Detail                             |
+| ----------- | ------------------------------------------------------- |
+| Atomicity   | Single versioned commit in `_delta_log` per transaction |
+| Consistency | Schema and constraints enforced at write time           |
+| Isolation   | Snapshot isolation, optimistic concurrency control      |
+| Durability  | Data and logs stored durably in object storage / DBFS   |
+
+---
+
+## 10. End To End Conceptual View
+
+```mermaid
+flowchart TB
+    subgraph Catalog Layer
+        CM[hive_metastore]
+        SC[default schema]
+        TT[employees table- logical]
+    end
+
+    subgraph Storage Layer
+        L[_delta_log/ - JSON + checkpoints]
+        D[Parquet data files- active + removed]
+    end
+
+    subgraph Compute Layer
+        Q1[SQL queries - SELECT, INSERT, UPDATE]
+        Q2[Jobs / Workflows]
+    end
+
+    CM --> SC --> TT
+    TT -->|location| L
+    TT -->|location| D
+
+    Q1 --> TT
+    Q2 --> TT
+
+    L -->|defines active files| D
+```
+
+* **Catalog Layer:** Resolves table names and stores metadata.
+* **Storage Layer:** Contains Delta transaction log and Parquet data files.
+* **Compute Layer:** Executes SQL, batch jobs, and streaming on top of Delta tables.
+
+---
+
+## 11. Practical Checks To Perform In The Notebook
+
+1. Run:
+
+   ```sql
+   USE CATALOG hive_metastore;
+   USE SCHEMA default;
+   ```
+
+2. Create the `employees` table and insert the rows.
+
+3. Inspect:
+
+   ```sql
+   DESCRIBE DETAIL employees;
+   DESCRIBE HISTORY employees;
+   ```
+
+4. List files:
+
+   ```python
+   %fs ls dbfs:/user/hive/warehouse/default.db/employees
+   %fs ls dbfs:/user/hive/warehouse/default.db/employees/_delta_log
+   ```
+
+5. Perform the `UPDATE` and re run `DESCRIBE DETAIL` and `%fs ls` to see:
+
+   * Additional Parquet files in storage
+   * Updated history version
+   * Difference between physical file count and `numFiles` (active files)
+
+Through these steps you see concretely how logical SQL operations on Delta tables translate into physical files and log entries while preserving ACID guarantees.

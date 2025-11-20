@@ -1,15 +1,5 @@
 # E2E-RAG on Databricks
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)]()
-![Status](https://img.shields.io/badge/status-active-brightgreen.svg)
-![Databricks](https://img.shields.io/badge/platform-Databricks-red.svg)
-![Delta Lake](https://img.shields.io/badge/Delta-Lake-blue.svg)
-![Unity Catalog](https://img.shields.io/badge/Unity-Catalog-purple.svg)
-![MLflow](https://img.shields.io/badge/MLflow-enabled-lightblue.svg)
-![Vector Search](https://img.shields.io/badge/Feature-Vector%20Search-orange.svg)
-![RAG](https://img.shields.io/badge/Pattern-RAG-yellow.svg)
-![LLM](https://img.shields.io/badge/LLM-open--source%20or%20foundation-black.svg)
-![Docs](https://img.shields.io/badge/Docs-step--by--step-informational.svg)
 
 End-to-end reference implementation for building, evaluating, and deploying a Retrieval Augmented Generation (RAG) application on Databricks. The repository provides a sequential set of Markdown guides covering ingestion, preparation, embedding generation, vector search, model training, serving, and endpoint integration.
 
@@ -37,28 +27,40 @@ This project provides a complete guide for designing and delivering an LLM-based
 
 - [Overview:](00_overview.md)
   - High-level problem statement, scope, and the end-to-end flow of the solution.
+
 - [Architecture](01_architecture.md)
   - System architecture, core components, and data flow diagrams for the LLM solution on Databricks.
+
 - [Data Ingestion](02_data_ingestion.md)
   - Data sources, ingestion strategies, and pipelines for loading raw data into Databricks Bronze or raw Delta tables.
+
 - [Embeddings on Databricks](03_embeddings_on_databricks.md)
   - Methods for generating and managing text embeddings on Databricks, including model choices and embedding storage patterns.
+
 - [Delta Table and Unity Catalog](04_delta_table_and_unity_catalog.md)
   - Organizing data in Delta tables, registering them in Unity Catalog, and managing access control and governance.
+
 - [Databricks Vector Search](05_databricks_vector_search.md)
   - Setup and use of Databricks vector search for similarity retrieval over embeddings.
+
 - [LLM on Databricks](06_llm_on_databricks.md)
   - Selecting, configuring, and executing LLMs on Databricks, including foundation models and fine-tuning approaches.
+
 - [MLflow Integration](07_mlflow_integration.md)
   - MLflow experiment tracking, model registry usage, and governance for embedding and LLM models.
+
 - [Model Serving](08_model_serving.md)
   - Deploying models via Databricks Model Serving with scaling, performance, and monitoring considerations.
+
 - [Evaluation and Feedback](09_evaluation_and_feedback.md)
   - Methods for evaluating LLM output quality, RAG retrieval accuracy, and incorporating structured feedback loops.
+
 - [Complete Databricks](10_complete_databricks.md)
   - Comprehensive walkthrough combining all previous modules into a single Databricks implementation pattern.
+
 - [Teams Integration](11_teams_integration.md)
   - Integration patterns for connecting the Databricks LLM endpoint to Microsoft Teams through bots, message extensions, or webhooks.
+
 - [Endpoint Implementation](12_endpoint-implementation.md)
   - Final endpoint implementation including request-response format, authentication, and operational best practices.
 
@@ -280,63 +282,111 @@ This screenshot represents the transition from environment setup to content inge
 
 This completes the document upload portion of the Agentic Systems RAG application setup.
 
-
-![alt text](./images/image-3.png)
-
 ---
-
-
-
+![alt text](./images/image-3.png)
+---
 ![alt text](./images/image-4.png)
+---
 ![alt text](./images/image-5.png)
+---
 ![alt text](./images/image-6.png)
+---
 ![alt text](./images/image-7.png)
+---
 ![alt text](./images/image-8.png)
+---
 ![alt text](./images/image-9.png)
+---
 ![alt text](./images/image-10.png)
+---
 ![alt text](./images/image-11.png)
+---
 ![alt text](./images/image-12.png)
+---
 ![alt text](./images/image-13.png)
+---
 ![alt text](./images/image-14.png)
+---
 ![alt text](./images/image-15.png)
+---
 ![alt text](./images/image-16.png)
+---
 ![alt text](./images/image-17.png)
+---
 ![alt text](./images/image-18.png)
+---
 ![alt text](./images/image-19.png)
+---
 ![alt text](./images/image-20.png)
+---
 ![alt text](./images/image-21.png)
+---
 ![alt text](./images/image-22.png)
+---
 ![alt text](./images/image-23.png)
+---
 ![alt text](./images/image-24.png)
+---
 ![alt text](./images/image-25.png)
+---
 ![alt text](./images/image-26.png)
+---
 ![alt text](./images/image-27.png)
+---
 ![alt text](./images/image-28.png)
+---
 ![alt text](./images/image-29.png)
+---
 ![alt text](./images/image-30.png)
+---
 ![alt text](./images/image-31.png)
+---
 ![alt text](./images/image-32.png)
+---
 ![alt text](./images/image-33.png)
+---
 ![alt text](./images/image-34.png)
+---
 ![alt text](./images/image-35.png)
+---
 ![alt text](./images/image-36.png)
+---
 ![alt text](./images/image-37.png)
+---
 ![alt text](./images/image-38.png)
+---
 ![alt text](./images/image-39.png)
+---
 ![alt text](./images/image-40.png)
+---
 ![alt text](./images/image-41.png)
+---
 ![alt text](./images/image-42.png)
+---
 ![alt text](./images/image-43.png)
+---
 ![alt text](./images/image-44.png)
+---
 ![alt text](./images/image-45.png)
+---
 ![alt text](./images/image-46.png)
+---
 ![alt text](./images/image-47.png)
+---
 ![alt text](./images/image-48.png)
+---
 ![alt text](./images/image-49.png)
+---
 ![alt text](./images/image-50.png)
+---
 ![alt text](./images/image-51.png)
+---
 ![alt text](./images/image-52.png)
+---
 ![alt text](./images/image-53.png)
+---
 ![alt text](./images/image-54.png)
+---
 ![alt text](./images/image-55.png)
+---
 ![alt text](./images/image-56.png)

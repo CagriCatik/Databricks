@@ -5,6 +5,7 @@ nav:
 
   - Introduction:
       - Overview: 01_introduction/01_overview.md
+      - Databricks: 01_introduction/02_databricks.md
       - Free Trial: 01_introduction/03_free-trial.md
       - Workspace: 01_introduction/04_workspace.md
       - Materials: 01_introduction/05_materials.md
@@ -31,30 +32,105 @@ nav:
       - Higher-order Functions & SQL UDFs: 03_elt-with-spark-sql-python/06_higher-order-functions-sql-udfs.md
 
   - Incremental Data Processing:
-      - Overview: 04_incremental-data-processing/index.md
+      - Structured Streaming: 04_incremental-data-processing/01_structured_streaming.md
+      - Structured Streaming Hands-on: 04_incremental-data-processing/02_structured_streaming-hands_on.md
+      - Incremental Data Ingestion: 04_incremental-data-processing/03_incremental-data-ingestion.md
+      - Auto Loader: 04_incremental-data-processing/04_auto-loader.md
+      - Multi-hop Loader: 04_incremental-data-processing/05_multi-hop-loader.md
+      - Multi-hop Architecture: 04_incremental-data-processing/06_multi-hop-architecture.md
 
   - Productionizing Data Pipelines:
-      - Overview: 05_productionizing-data-pipelines/index.md
+      - Lakeflow Declarative Pipelines: 05_productionizing-data-pipelines/01_lakeflow-declarative-pipelines.md
+      - Change Data Capture: 05_productionizing-data-pipelines/02_change_data_capture.md
+      - Producing CDC Feed with DLT: 05_productionizing-data-pipelines/03_producing_cdc-feed_dlt.md
+      - Lakeflow Jobs: 05_productionizing-data-pipelines/04_lakeflow-jobs.md
+      - Deploying Jobs with DB Asset Bundles: 05_productionizing-data-pipelines/05_deploying-jobs-db-asset-bundles.md
 
   - Data Governance:
-      - Overview: 06_data-governance/index.md
+      - Databricks SQL: 06_data-governance/01_db-sql.md
+      - Data Objects and Privileges: 06_data-governance/02_data-objects-privileges.md
+      - Managing Permissions: 06_data-governance/03_managing_permissions.md
+      - Unity Catalog: 06_data-governance/04_unity_catalog.md
+      - Delta Sharing: 06_data-governance/05_delta-sharing.md
+      - Lakehouse Federation: 06_data-governance/06_lakehouse-federation.md
+      - Cluster Best Practices: 06_data-governance/07_cluster-best-practices.md
 
   - Applications:
-      - Deep Learning on Databricks: 07_deep_learning/training-dataset.md
-      
-  - RAG:
-    - Overview: 10_rag/rag.md
-    
-  - MATLAB on Databricks:
-      - Compiling and Running: 08_matlab/compiling-running.md
-      - Sources: 08_matlab/sources.md
+      - Deep Learning:
+          - Overview: 07_deep_learning/README.md
+          - Architecture:
+              - Cluster Architecture: 07_deep_learning/01_architecture/cluster_architecture.md
+              - Component Interactions: 07_deep_learning/01_architecture/component_interactions.md
+              - System Overview: 07_deep_learning/01_architecture/system_overview.md
+          - Data:
+              - Data Quality Checks: 07_deep_learning/02_data/data_quality_checks.md
+              - Data Sources: 07_deep_learning/02_data/data_sources.md
+              - Delta Lake Layout: 07_deep_learning/02_data/delta_lake_layout.md
+              - Ingestion Pipeline: 07_deep_learning/02_data/ingestion_pipeline.md
+              - Mosaic Streaming: 07_deep_learning/02_data/mosaic_streaming.md
+              - Schema Reference: 07_deep_learning/02_data/schema_reference.md
+          - Training:
+              - Single-node Training: 07_deep_learning/02_training/single_node_training.md
+              - Distributed Training with DeepSpeed: 07_deep_learning/02_training/distributed_training_deepspeed.md
+              - Distributed Training with Torch: 07_deep_learning/02_training/distributed_training_torch.md
+              - Hyperparameter Tuning: 07_deep_learning/02_training/hyperparameter_tuning.md
+              - Monitoring and TensorBoard: 07_deep_learning/02_training/monitoring_and_tensorboard.md
+              - Optimization Best Practices: 07_deep_learning/02_training/optimization_best_practices.md
+              - Ray and Mosaic Composer: 07_deep_learning/02_training/ray_and_mosaic_composer.md
+          - Inference:
+              - Batch Inference: 07_deep_learning/03_inference/batch_inference.md
+              - Model Registry and Stages: 07_deep_learning/03_inference/model_registry_and_stages.md
+              - Online Serving: 07_deep_learning/03_inference/online_serving.md
+              - Streaming Inference: 07_deep_learning/03_inference/streaming_inference.md
+              - UDF Inference Examples: 07_deep_learning/03_inference/udf_inference_examples.md
+          - MLflow:
+              - Autologging Behavior: 07_deep_learning/04_mlflow/autologging_behavior.md
+              - Experiment Structure: 07_deep_learning/04_mlflow/experiment_structure.md
+              - Governance and Versioning: 07_deep_learning/04_mlflow/governance_and_versioning.md
+              - Model Signature Standards: 07_deep_learning/04_mlflow/model_signature_standards.md
+          - Advanced:
+              - Curriculum Learning: 07_deep_learning/05_advanced/curriculum_learning.md
+              - Large Model Strategies: 07_deep_learning/05_advanced/large_model_strategies.md
+              - Synthetic Data Generation: 07_deep_learning/05_advanced/synthetic_data_generation.md
+              - TAO Self-training: 07_deep_learning/05_advanced/tao_self_training.md
+          - Operations:
+              - GPU Cluster Policies: 07_deep_learning/06_operations/gpu_cluster_policies.md
+              - Job Orchestration: 07_deep_learning/06_operations/job_orchestration.md
+              - Monitoring Dashboards: 07_deep_learning/06_operations/monitoring_dashboards.md
+              - Resource Planning: 07_deep_learning/06_operations/resource_planning.md
 
+      - LLM:
+          - Overview: 08_llm/README.md
+          - Intro: 08_llm/01_intro.md
+          - Operations Guide: 08_llm/02_operations-guide.md
+          - Architecture: 08_llm/03_architecture.md
+          - Fine-tuning: 08_llm/04_fine-tuning.md
+          - Evaluation of Fine-tuned LLM: 08_llm/evaluation-fine-tuned-llm.md
+
+  - RAG:
+      - RAG: 09_rag/rag.md
+      - Overview: 09_rag/00_overview.md
+      - Architecture: 09_rag/01_architecture.md
+      - Data Ingestion: 09_rag/02_data_ingestion.md
+      - Embeddings on Databricks: 09_rag/03_embeddings_on_databricks.md
+      - Delta Table and Unity Catalog: 09_rag/04_delta_table_and_unity_catalog.md
+      - Databricks Vector Search: 09_rag/05_databricks_vector_search.md
+      - LLM on Databricks: 09_rag/06_llm_on_databricks.md
+      - MLflow Integration: 09_rag/07_mlflow_integration.md
+      - Model Serving: 09_rag/08_model_serving.md
+      - Evaluation and Feedback: 09_rag/09_evaluation_and_feedback.md
+      - Complete Databricks Flow: 09_rag/10_complete_databricks.md
+      - Teams Integration: 09_rag/11_teams_integration.md
+      - Endpoint Implementation: 09_rag/12_endpoint-implementation.md
+      
   - Notions:
-      - Core Concepts: 99_notions/00_core-concepts.md
-      - Parquet: 99_notions/01_parquet.md
-      - Data Processing: 99_notions/02_data-processing.md
-      - Data Management: 99_notions/03_data-management.md
-      - Development & Deployment: 99_notions/04_development-deployment.md
+      - Core Concepts: 00_glossary/00_core-concepts.md
+      - Parquet: 00_glossary/01_parquet.md
+      - Data Processing: 00_glossary/02_data-processing.md
+      - Data Management: 00_glossary/03_data-management.md
+      - Development & Deployment: 00_glossary/04_development-deployment.md
+      - Notebook Cheatsheet: 00_glossary/05_notebook-cheatsheet.md
+      - Bronze, Silver, Gold: 00_glossary/06_bronze-silver-gold.md  
 
 theme:
   name: material
@@ -73,6 +149,7 @@ theme:
     - header.autohide
     - toc.follow
     - palette.toggle
+    - content.image.zoom
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -105,4 +182,8 @@ markdown_extensions:
       pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
